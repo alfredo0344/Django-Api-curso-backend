@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %} Crear Tarea {% endblock %}
+
+{% block content %}
+  <h1>Crear Nueva Tarea</h1>
+  <form method="POST" action="{% url 'create_task' %}">
+    {% csrf_token %}
+    <div>
+      <label for="title">Título:</label><br>
+      <input type="text" id="title" name="title" required><br><br>
+    </div>
+    
+    <div>
+      <label for="description">Descripción:</label><br>
+      <textarea id="description" name="description" required></textarea><br><br>
+    </div>
+    
+    <button type="submit">Crear Tarea</button>
+  </form>
+{% endblock %}

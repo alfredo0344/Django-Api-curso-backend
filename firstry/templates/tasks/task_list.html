@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ page_title }} {% endblock %}
+
+{% block content %}
+
+  <h1>{{ page_title }}</h1>
+
+  {% if tasks %}
+    <ul>
+      {% for task in tasks %}
+        <li>
+          <strong>{{ task.title }}</strong>
+          <p>{{ task.description }}</p>
+          {% if task.completed %}
+            <em>Completada</em>
+          {% else %}
+            <em>Pendiente</em>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No hay tareas</p>
+  {% endif %}
+
+{% endblock %}
