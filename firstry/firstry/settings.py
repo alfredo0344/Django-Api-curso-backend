@@ -12,23 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
-
-import dotenv
-dotenv.load_dotenv()
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-    }
-else:
-    # Fallback local DB for development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +31,7 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 
+#Debemos instalar whitenoise para servir archivos estáticos en producción, y agregarlo a MIDDLEWARE
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,12 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.runserver_nostatic',
+    'whitenoise.runserver_nostatic', # Agrega esta línea para usar WhiteNoise en desarrollo
     'tasks',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
 
+# Agrega 'whitenoise.middleware.WhiteNoiseMiddleware' a MIDDLEWARE para servir archivos estáticos en producción
+
+#se debe agregar el middleware de WhiteNoise para servir archivos estáticos en producción. Asegúrate de agregarlo después de 'django.middleware.security.SecurityMiddleware' y antes de 'django.contrib.sessions.middleware.SessionMiddleware' para garantizar que los archivos estáticos se sirvan correctamente tanto en desarrollo como en producción.
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -91,22 +78,39 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'firstry.wsgi.app'
+WSGI_APPLICATION = 'firstry.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.onkljdcuzzcdeoesynjp',
-        'PASSWORD': 'Adtl0344*',
-        'HOST': 'aws-0-us-west-2.pooler.supabase.com',
-        'PORT': 6543,
+import os
+import dj_database_url
+# Para poder cargar las variables de entorno en desarrollo desde un archivo .env, es necesario instalar la librería python-dotenv. Puedes hacerlo ejecutando el siguiente comando en tu terminal:
+
+# pip install python-dotenv
+
+import dotenv
+# Carga las variables de entorno desde el archivo .env
+dotenv.load_dotenv()
+
+#comenta o borra lo anterior en produccion, ya que en producción las variables de entorno se configuran directamente en el entorno de ejecución (como Railway) y no es necesario cargar un archivo .env.
+
+# Configuración de la base de datos utilizando la librería dj_database_url para manejar la URL de la base de datos proporcionada por Railway. Si no se encuentra la variable de entorno DATABASE_URL, se utiliza una base de datos SQLite local para desarrollo.
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    # Fallback local DB for development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -155,6 +159,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ] if os.path.isdir(os.path.join(BASE_DIR, 'static')) else []
+
 
 # creamos un nuevo directorio llamado staticfiles para almacenar los archivos estáticos recopilados por collectstatic. Esto es necesario para que WhiteNoise pueda servir los archivos estáticos en producción. Asegúrate de ejecutar python manage.py collectstatic antes de desplegar tu aplicación para recopilar todos los archivos estáticos en el directorio staticfiles.
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
